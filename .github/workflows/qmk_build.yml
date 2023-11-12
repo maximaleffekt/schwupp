@@ -10,7 +10,7 @@ jobs:
       matrix:
 # List of keymap json files to build
         file:
-        - cradio.json
+        - ferris_sweep_layout_split_3x5_2_mine.json
 # End of json file list
 
     steps:
