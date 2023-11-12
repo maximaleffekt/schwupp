@@ -1,47 +1,42 @@
 name: Build QMK firmware
-on: [push, workflow_dispatch]
+on: [workflow_dispatch, push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: qmkfm/base_container
+    container: qmkfm/qmk_cli
     strategy:
       fail-fast: false
       matrix:
-# List of keymap json files to build
+        # List of keymap json files to build
         file:
-        - ferris_sweep_layout_split_3x5_2_mine.json
-# End of json file list
+          - ferris_sweep_layout_split_3x5_2_mine.json
+        # End of json file list
 
     steps:
+      - name: Disable git safe directory checks
+        run: git config --global --add safe.directory '*'
 
-    - name: Checkout QMK
-      uses: actions/checkout@v2
-      with:
-        repository: qmk/qmk_firmware
-# Uncomment the following for develop branch
-#        ref: develop
-        fetch-depth: 1
-        persist-credentials: false
-        submodules: recursive
+      - name: Checkout QMK
+        uses: actions/checkout@v3
+        with:
+          repository: qmk/qmk_firmware
+          submodules: recursive
 
-    - name: Checkout userspace
-      uses: actions/checkout@v2
-      with:
-        path: users/${{ github.actor }}
-        fetch-depth: 1
-        persist-credentials: false
+      - name: Checkout userspace
+        uses: actions/checkout@v3
+        with:
+          path: users/${{ github.actor }}
 
-    - name: Build firmware
-      run: qmk compile "users/${{ github.actor }}/${{ matrix.file }}"
+      - name: Build firmware
+        run: qmk compile "users/${{ github.actor }}/${{ matrix.file }}"
 
-    - name: Archive firmware
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ matrix.file }}_${{ github.actor }}
-        retention-days: 5
-        path: |
-          *.hex
-          *.bin
-          *.uf2
-      continue-on-error: true
+      - name: Archive firmware
+        uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          name: ${{ matrix.file }}_${{ github.actor }}
+          path: |
+            *.hex
+            *.bin
+            *.uf2
